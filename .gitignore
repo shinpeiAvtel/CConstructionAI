@@ -1,0 +1,32 @@
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+
+.env
+.env.*
+
+# Local development DBs
+data/*.db
+data/*.sqlite
+data/*.sqlite3
+
+# Office files and exports
+*.xlsx
+*.pdf
+
+.vscode/
+
+.pytest_cache/
+.mypy_cache/
+
+dist/
+build/
+
+# Note: Do NOT ignore the following project files
+# backend/*.py
+# docs/*.md
+# tests/*.py
+# requirements.txt
+# README.md
+# .github/copilot-instructions.md
