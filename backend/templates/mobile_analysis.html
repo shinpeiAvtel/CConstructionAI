@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>CConstructionAI | Estimate Analysis</title>
+    <meta name="description" content="Estimate Analysis mobile interface for document review and Excel download." />
+    <link rel="stylesheet" href="/static/mobile_analysis.css" />
+  </head>
+  <body>
+    <main class="page-shell" aria-labelledby="page-title">
+      <section class="panel" aria-live="polite">
+        <header class="header-block">
+          <p class="eyebrow">CConstructionAI</p>
+          <h1 id="page-title">Estimate Analysis</h1>
+        </header>
+
+        <form id="document-form" class="document-form" novalidate>
+          <div class="field-group">
+            <label for="document-id">Document ID</label>
+            <input
+              id="document-id"
+              name="document_id"
+              type="number"
+              inputmode="numeric"
+              min="1"
+              step="1"
+              placeholder="Enter Document ID"
+              aria-describedby="status-region"
+            />
+          </div>
+
+          <button id="load-button" type="submit" class="primary-button">
+            Load Document
+          </button>
+        </form>
+
+        <div id="status-region" class="status-region" role="status" aria-live="polite"></div>
+
+        <div class="summary-card" aria-live="polite">
+          <dl class="meta-list">
+            <div><dt>Document:</dt><dd id="document-value">—</dd></div>
+            <div><dt>Filename:</dt><dd id="filename-value">—</dd></div>
+            <div><dt>Vendor:</dt><dd id="vendor-value">—</dd></div>
+            <div><dt>Project:</dt><dd id="project-value">—</dd></div>
+            <div><dt>Quote Number:</dt><dd id="quote-number-value">—</dd></div>
+            <div><dt>Verification:</dt><dd id="verification-value">—</dd></div>
+          </dl>
+        </div>
+
+        <div class="analysis-card" aria-live="polite">
+          <dl class="meta-list compact">
+            <div><dt>Analysis:</dt><dd id="analysis-value">—</dd></div>
+            <div><dt>Verification:</dt><dd id="analysis-verification-value">—</dd></div>
+            <div><dt>Items:</dt><dd id="items-value">—</dd></div>
+            <div><dt>Recommendations:</dt><dd id="recommendations-value">—</dd></div>
+          </dl>
+        </div>
+
+        <button
+          id="download-button"
+          type="button"
+          class="download-button"
+          disabled
+          aria-disabled="true"
+        >
+          Download Analysis Excel
+        </button>
+      </section>
+    </main>
+
+    <script src="/static/mobile_analysis.js"></script>
+  </body>
+</html>

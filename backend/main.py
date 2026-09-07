@@ -2,7 +2,9 @@ from contextlib import asynccontextmanager
 from datetime import datetime
 from statistics import mean, median, quantiles
 
-from fastapi import Depends, FastAPI, HTTPException, UploadFile, File, Form
+from fastapi import Depends, FastAPI, HTTPException, Request, UploadFile, File, Form
+from fastapi.staticfiles import StaticFiles
+from fastapi.templating import Jinja2Templates
 from sqlmodel import Session, select
 
 from backend.database import create_db_and_tables, get_session
@@ -34,6 +36,9 @@ from pathlib import Path
 from fastapi.responses import StreamingResponse, HTMLResponse
 from openpyxl import Workbook
 from openpyxl.styles import Font, Alignment, PatternFill, Border, Side
+
+from backend.routers.work_type_router import router as work_type_router
+from backend.routers.estimate_document_router import router as estimate_document_router
 
 # =========================================================
 # APPLICATION STARTUP
@@ -90,12 +95,22 @@ def validate_date_string(
             ),
         )
 
+BASE_DIR = Path(__file__).resolve().parent
+STATIC_DIR = BASE_DIR / "static"
+TEMPLATE_DIR = BASE_DIR / "templates"
+
 app = FastAPI(
     title="Construction Estimator",
     description="工事歩掛・積算システム",
     version="0.3.0",
     lifespan=lifespan,
 )
+
+app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
+templates = Jinja2Templates(directory=str(TEMPLATE_DIR))
+
+app.include_router(work_type_router)
+app.include_router(estimate_document_router)
 
 
 # =========================================================
@@ -116,6 +131,24 @@ def health_check():
     return {
         "status": "ok"
     }
+
+
+@app.get("/mobile", response_class=HTMLResponse)
+async def mobile_estimate_analysis(request: Request):
+    return templates.TemplateResponse(
+        request,
+        "mobile_analysis.html",
+        {},
+    )
+
+
+@app.get("/upload", response_class=HTMLResponse)
+async def upload_mobile_ui(request: Request):
+    return templates.TemplateResponse(
+        request,
+        "upload_mobile.html",
+        {},
+    )
 
 
 # =========================================================
@@ -767,7 +800,7 @@ def update_actual_work(
 
     record = session.get(
         ActualWorkRecord,
-        record_id,F
+        record_id,
     )
 
     if not record:

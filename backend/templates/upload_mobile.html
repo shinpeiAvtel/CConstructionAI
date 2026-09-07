@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>CConstructionAI Upload</title>
+    <meta name="description" content="Upload a PDF estimate document from a mobile device." />
+    <link rel="stylesheet" href="/static/mobile_analysis.css" />
+    <style>
+      .upload-form {
+        display: grid;
+        gap: 14px;
+      }
+      .field-group {
+        display: grid;
+        gap: 8px;
+      }
+      .upload-result {
+        display: none;
+        margin-top: 16px;
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        background: #f9fbfc;
+        padding: 14px;
+      }
+      .upload-result.visible {
+        display: block;
+      }
+      .result-grid {
+        display: grid;
+        gap: 8px;
+        margin-top: 10px;
+      }
+      .result-grid div {
+        display: grid;
+        grid-template-columns: minmax(110px, 130px) 1fr;
+        gap: 8px;
+      }
+      .actions {
+        display: grid;
+        gap: 12px;
+        margin-top: 12px;
+      }
+      .link-button {
+        display: inline-block;
+        text-align: center;
+        text-decoration: none;
+        background: var(--primary);
+        color: #fff;
+        min-height: 48px;
+        line-height: 48px;
+        border-radius: 10px;
+        font-weight: 600;
+      }
+      .secondary {
+        background: #eaf2fb;
+        color: var(--primary);
+      }
+      .success-banner {
+        color: var(--success);
+        font-weight: 700;
+      }
+      .error-banner {
+        color: var(--danger);
+        font-weight: 700;
+      }
+    </style>
+  </head>
+  <body>
+    <main class="page-shell" aria-labelledby="page-title">
+      <section class="panel" aria-live="polite">
+        <header class="header-block">
+          <p class="eyebrow">CConstructionAI</p>
+          <h1 id="page-title">CConstructionAI Upload</h1>
+          <p class="eyebrow">Estimate PDF Intake</p>
+        </header>
+
+        <form id="upload-form" class="upload-form" enctype="multipart/form-data" novalidate>
+          <div class="field-group">
+            <label for="pdf-file">PDF</label>
+            <input id="pdf-file" name="file" type="file" accept="application/pdf,.pdf" aria-label="Select PDF file" />
+          </div>
+
+          <div class="field-group">
+            <label for="source-type">Document Type</label>
+            <select id="source-type" name="source_type">
+              <option value="VENDOR_QUOTE">Vendor Quote</option>
+              <option value="SUBCONTRACTOR_QUOTE">Subcontractor Quote</option>
+              <option value="SUPPLIER_QUOTE">Supplier Quote</option>
+              <option value="INTERNAL_ESTIMATE">Internal Estimate</option>
+              <option value="CUSTOMER_QUOTE">Customer Quote</option>
+              <option value="OTHER">Other</option>
+            </select>
+          </div>
+
+          <div class="field-group">
+            <label for="project-code">Project</label>
+            <input id="project-code" name="project_code" type="text" placeholder="Optional" />
+          </div>
+
+          <div class="field-group">
+            <label for="vendor-name">Vendor</label>
+            <input id="vendor-name" name="vendor_name" type="text" placeholder="Optional" />
+          </div>
+
+          <div class="field-group">
+            <label for="quote-date">Quote Date</label>
+            <input id="quote-date" name="quote_date" type="date" />
+          </div>
+
+          <div class="field-group">
+            <label for="notes">Comment</label>
+            <textarea id="notes" name="notes" rows="3" placeholder="Optional"></textarea>
+          </div>
+
+          <button id="upload-button" type="submit" class="primary-button">Upload PDF</button>
+        </form>
+
+        <div id="status-region" class="status-region" role="status" aria-live="polite"></div>
+
+        <section id="upload-result" class="upload-result" aria-live="polite">
+          <div id="result-title" class="success-banner">Upload Complete</div>
+          <div class="result-grid">
+            <div><span>Filename:</span><strong id="result-filename">—</strong></div>
+            <div><span>Document ID:</span><strong id="result-document-id">—</strong></div>
+            <div><span>Document Type:</span><strong id="result-source-type">—</strong></div>
+            <div><span>Vendor:</span><strong id="result-vendor">—</strong></div>
+            <div><span>Project:</span><strong id="result-project">—</strong></div>
+            <div><span>Status:</span><strong id="result-status">—</strong></div>
+            <div><span>Duplicate:</span><strong id="result-duplicate">—</strong></div>
+          </div>
+          <div class="actions">
+            <a id="analysis-link" class="link-button" href="#">View Analysis</a>
+            <a id="excel-link" class="link-button secondary" href="#">Download Analysis Excel</a>
+          </div>
+        </section>
+      </section>
+    </main>
+
+    <script>
+      const form = document.getElementById('upload-form');
+      const fileInput = document.getElementById('pdf-file');
+      const uploadButton = document.getElementById('upload-button');
+      const statusRegion = document.getElementById('status-region');
+      const resultBox = document.getElementById('upload-result');
+      const analysisLink = document.getElementById('analysis-link');
+      const excelLink = document.getElementById('excel-link');
+
+      function setStatus(message, type = 'info') {
+        statusRegion.textContent = message;
+        statusRegion.className = `status-region ${type}`;
+      }
+
+      function showResult(payload) {
+        resultBox.classList.add('visible');
+        document.getElementById('result-filename').textContent = payload.filename || '—';
+        document.getElementById('result-document-id').textContent = payload.document_id ?? '—';
+        document.getElementById('result-source-type').textContent = payload.source_type || '—';
+        document.getElementById('result-vendor').textContent = payload.vendor_name || '—';
+        document.getElementById('result-project').textContent = payload.project_code || '—';
+        document.getElementById('result-status').textContent = payload.verification_status || '—';
+        document.getElementById('result-duplicate').textContent = payload.duplicate ? 'Yes' : 'No';
+        document.getElementById('result-title').textContent = payload.duplicate ? 'Duplicate Document' : 'Upload Complete';
+        analysisLink.href = payload.document_id ? `/mobile?document_id=${payload.document_id}` : '#';
+        excelLink.href = payload.document_id ? `/documents/${payload.document_id}/analysis/export/excel` : '#';
+      }
+
+      form.addEventListener('submit', async (event) => {
+        event.preventDefault();
+        const file = fileInput.files[0];
+
+        if (!file) {
+          setStatus('Please select a PDF file.', 'error');
+          return;
+        }
+
+        if (!file.name.toLowerCase().endsWith('.pdf') || file.type !== 'application/pdf') {
+          setStatus('Please upload a valid PDF file.', 'error');
+          return;
+        }
+
+        uploadButton.disabled = true;
+        uploadButton.textContent = 'Uploading...';
+        setStatus('Uploading PDF...', 'info');
+
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('source_type', document.getElementById('source-type').value);
+        formData.append('project_code', document.getElementById('project-code').value);
+        formData.append('vendor_name', document.getElementById('vendor-name').value);
+        formData.append('quote_date', document.getElementById('quote-date').value);
+        formData.append('notes', document.getElementById('notes').value);
+
+        try {
+          const response = await fetch('/estimate-documents/upload', {
+            method: 'POST',
+            body: formData,
+          });
+
+          const payload = await response.json();
+          if (!response.ok) {
+            throw new Error(payload.detail || 'Upload failed');
+          }
+
+          showResult(payload);
+          setStatus(payload.duplicate ? 'Duplicate document detected.' : 'Upload Complete', payload.duplicate ? 'info' : 'success');
+        } catch (error) {
+          setStatus(error.message || 'Upload Failed', 'error');
+          resultBox.classList.remove('visible');
+        } finally {
+          uploadButton.disabled = false;
+          uploadButton.textContent = 'Upload PDF';
+        }
+      });
+    </script>
+  </body>
+</html>

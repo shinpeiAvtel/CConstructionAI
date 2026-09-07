@@ -28,6 +28,28 @@ class LaborMaster(SQLModel, table=True):
 
 
 # =========================================================
+# WORK TYPE MASTER
+# =========================================================
+
+class WorkTypeMaster(SQLModel, table=True):
+    id: int | None = Field(default=None, primary_key=True)
+
+    work_type_code: str = Field(index=True, unique=True)
+    category: str = Field(index=True)
+    sub_category: str | None = Field(default=None, index=True)
+
+    work_type_name: str
+    description: str | None = None
+
+    default_unit: str | None = None
+
+    active: bool = True
+
+    created_at: datetime = Field(default_factory=datetime.now)
+    updated_at: datetime = Field(default_factory=datetime.now)
+
+
+# =========================================================
 # 会社設定マスター
 # =========================================================
 
@@ -419,5 +441,104 @@ class UploadedEstimate(SQLModel, table=True):
     notes: str | None = None
 
     uploaded_at: datetime = Field(default_factory=datetime.now)
+
+
+class EstimateDocument(SQLModel, table=True):
+    id: int | None = Field(default=None, primary_key=True)
+
+    source_filename: str
+    file_hash: str = Field(index=True, unique=True)
+
+    source_type: str = Field(index=True)
+    time_category: str = Field(default="CURRENT", index=True)
+
+    vendor_name: str | None = Field(default=None, index=True)
+    project_code: str | None = Field(default=None, index=True)
+    project_name: str | None = None
+    quote_number: str | None = Field(default=None, index=True)
+    quote_date: str | None = Field(default=None, index=True)
+    site: str | None = None
+    project_type: str | None = Field(default=None, index=True)
+
+    source_storage_type: str = "LOCAL"
+    source_file_path: str | None = None
+
+    extraction_status: str = Field(default="PENDING", index=True)
+    verification_status: str = Field(default="NEEDS_REVIEW", index=True)
+    quality_status: str = Field(default="RAW", index=True)
+
+    notes: str | None = None
+
+    upload_timestamp: datetime = Field(default_factory=datetime.now, index=True)
+    created_at: datetime = Field(default_factory=datetime.now)
+    updated_at: datetime = Field(default_factory=datetime.now)
+
+
+class QuoteItem(SQLModel, table=True):
+    id: int | None = Field(default=None, primary_key=True)
+
+    document_id: int = Field(index=True)
+    line_number: int
+
+    raw_description: str
+    normalized_description: str | None = None
+
+    work_type_code: str | None = Field(default=None, index=True)
+    mapping_confidence: float | None = None
+    mapping_method: str | None = None
+    mapping_verification_status: str = Field(default="NEEDS_REVIEW", index=True)
+
+    item_name: str | None = None
+    material_name: str | None = None
+    labor_name: str | None = None
+
+    quantity: float | None = None
+    unit: str | None = None
+    amount: float | None = None
+
+    source_unit_price: float | None = None
+    calculated_unit_price: float | None = None
+    normalized_unit_price: float | None = None
+
+    currency: str = "JPY"
+
+    manufacturer: str | None = None
+    model_number: str | None = None
+    vendor_name: str | None = None
+
+    quoted_person_days: float | None = None
+    quoted_workers: float | None = None
+    quoted_work_minutes: float | None = None
+    quoted_labor_amount: float | None = None
+    labor_data_source: str = Field(default="QUOTED_LABOR", index=True)
+
+    quality_status: str = Field(default="AI_EXTRACTED", index=True)
+    verification_status: str = Field(default="NEEDS_REVIEW", index=True)
+
+    notes: str | None = None
+    review_comment: str | None = None
+    reviewed_by: str | None = None
+    reviewed_at: datetime | None = None
+
+    created_at: datetime = Field(default_factory=datetime.now)
+    updated_at: datetime = Field(default_factory=datetime.now)
+
+
+class EstimateDocumentRawExtraction(SQLModel, table=True):
+    id: int | None = Field(default=None, primary_key=True)
+
+    document_id: int = Field(index=True)
+    stage: str = Field(default="TEXT_EXTRACTION", index=True)
+
+    extraction_status: str = Field(default="TEXT_EXTRACTED", index=True)
+    requires_ocr: bool = Field(default=False, index=True)
+
+    extractor_name: str | None = None
+    extractor_version: str | None = None
+
+    raw_text: str
+    raw_payload: str | None = None
+
+    created_at: datetime = Field(default_factory=datetime.now, index=True)
 
     
