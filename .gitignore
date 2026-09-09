@@ -13,6 +13,7 @@ data/*.sqlite3
 
 # Office files and exports
 *.xlsx
+!resource-management/excel/*.xlsx
 *.pdf
 
 data/uploads/
